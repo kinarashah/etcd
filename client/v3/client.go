@@ -286,6 +286,7 @@ func (c *Client) dial(creds grpccredentials.TransportCredentials, dopts ...grpc.
 	if err != nil {
 		return nil, fmt.Errorf("failed to configure dialer: %v", err)
 	}
+	fmt.Println("OPTS", fmt.Sprintf("%#v", opts))
 	if c.authTokenBundle != nil {
 		opts = append(opts, grpc.WithPerRPCCredentials(c.authTokenBundle.PerRPCCredentials()))
 	}
@@ -299,6 +300,7 @@ func (c *Client) dial(creds grpccredentials.TransportCredentials, dopts ...grpc.
 		defer cancel() // TODO: Is this right for cases where grpc.WithBlock() is not set on the dial options?
 	}
 	target := fmt.Sprintf("%s://%p/%s", resolver.Schema, c, authority(c.Endpoints()[0]))
+	fmt.Println("GRPC DIAL CONTEXT ENTER!!!! ")
 	conn, err := grpc.DialContext(dctx, target, opts...)
 	if err != nil {
 		return nil, err
@@ -338,6 +340,7 @@ func (c *Client) credentialsForEndpoint(ep string) grpccredentials.TransportCred
 }
 
 func newClient(cfg *Config) (*Client, error) {
+	fmt.Println("ENTERED NEW CLIENT ETCD")
 	if cfg == nil {
 		cfg = &Config{}
 	}
@@ -345,6 +348,8 @@ func newClient(cfg *Config) (*Client, error) {
 	if cfg.TLS != nil {
 		creds = credentials.NewBundle(credentials.Config{TLSConfig: cfg.TLS}).TransportCredentials()
 	}
+
+	fmt.Println("GOT CREDS!!!")
 
 	// use a temporary skeleton client to bootstrap first connection
 	baseCtx := context.TODO()
@@ -447,6 +452,7 @@ func newClient(cfg *Config) (*Client, error) {
 		}
 	}
 
+	fmt.Println("CALLING AUTOSYNC")
 	go client.autoSync()
 	return client, nil
 }
